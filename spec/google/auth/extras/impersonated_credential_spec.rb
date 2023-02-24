@@ -51,6 +51,44 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
     end
   end
 
+  describe '#inspect' do
+    it 'does not leak sensitive values' do
+      credential = described_class.new(
+        email_address: email_address,
+        scope: scopes,
+      )
+
+      expect(credential.inspect).to eq(
+        '#<Google::Auth::Extras::ImpersonatedCredential' \
+          ' @access_token=nil' \
+          ' @expires_at=nil' \
+          ' @impersonate_delegates=[]' \
+          ' @impersonate_lifetime=nil' \
+          ' @impersonate_name="projects/-/serviceAccounts/my-sa@my-project.iam.gserviceaccount.com"' \
+          '>',
+      )
+
+      IAMStubs.stub_generate_access_token(
+        name: "projects/-/serviceAccounts/#{email_address}",
+        scope: %w[a b c],
+        response_access_token: SecureRandom.hex(100),
+        response_expire_time: (Time.now + 600).utc.to_datetime.rfc3339,
+      )
+
+      credential.refresh!
+
+      expect(credential.inspect).to eq(
+        '#<Google::Auth::Extras::ImpersonatedCredential' \
+          ' @access_token=[REDACTED]' \
+          ' @expires_at=2023-02-16 21:58:30 +0000' \
+          ' @impersonate_delegates=[]' \
+          ' @impersonate_lifetime=nil' \
+          ' @impersonate_name="projects/-/serviceAccounts/my-sa@my-project.iam.gserviceaccount.com"' \
+          '>',
+      )
+    end
+  end
+
   context 'token refresh' do
     it 'refreshes when necessary' do
       credential = described_class.new(

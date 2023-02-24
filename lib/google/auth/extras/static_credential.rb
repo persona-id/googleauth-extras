@@ -26,6 +26,10 @@ module Google
           # This is a simple trick for getting the cause to be set.
           raise Signet::AuthorizationError, 'Refresh not supported'
         end
+
+        def inspect
+          "#<#{self.class.name} @access_token=[REDACTED] @expires_at=#{expires_at.inspect}>"
+        end
       end
     end
   end
