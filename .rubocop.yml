@@ -31,8 +31,14 @@ RSpec/ContextWording:
 RSpec/ExampleLength:
   Enabled: false
 
+RSpec/LetSetup:
+  Enabled: false
+
 RSpec/MultipleExpectations:
   Max: 50
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
 
 RSpec/NamedSubject:
   Enabled: false

@@ -30,14 +30,31 @@ Or install it yourself as:
 If you'd like to have credentials that act as a different service account, you can setup the credentials with:
 
 ```ruby
-Google::Apis::DriveV3::DriveService.new.tap do |ds|
-  ds.authorization = Google::Auth::Extras.impersonated_credential(
+# Old API Client
+Google::Apis::RequestOptions.default.authorization = Google::Auth::Extras.impersonated_authorization(
+  email_address: 'my-sa@my-project.iam.gserviceaccount.com',
+  scope: [
+    Google::Apis::ComputeV1::AUTH_CLOUD_PLATFORM,
+    Google::Apis::PubsubV1::AUTH_PUBSUB,
+  ],
+)
+
+# New API Client
+Google::Cloud.configure.credentials = Google::Auth::Extras.impersonated_credential(
+  email_address: 'my-sa@my-project.iam.gserviceaccount.com',
+  scope: Google::Cloud.configure.pubsub.scope,
+)
+
+# Dual Client Setup
+Google::Cloud.configure.credentials = Google::Auth::Extras.wrap_authorization(
+  Google::Apis::RequestOptions.default.authorization = Google::Auth::Extras.impersonated_authorization(
     email_address: 'my-sa@my-project.iam.gserviceaccount.com',
     scope: [
-      Google::Apis::SheetsV4::AUTH_DRIVE,
+      Google::Apis::ComputeV1::AUTH_CLOUD_PLATFORM,
+      Google::Apis::PubsubV1::AUTH_PUBSUB,
     ],
   )
-end
+)
 ```
 
 You can optionally specify the following additional options:
@@ -52,10 +69,20 @@ If you'd like to use a static access token, you can setup the credentials with:
 
 ```ruby
 # Old API Client
-Google::Apis::RequestOptions.default.authorization = Google::Auth::Extras.static_credential('my-access-token')
+Google::Apis::RequestOptions.default.authorization = Google::Auth::Extras.static_authorization('my-access-token')
+
 # New API Client
 Google::Cloud.configure.credentials = Google::Auth::Extras.static_credential('my-access-token')
+
+# Dual Client Setup
+Google::Cloud.configure.credentials = Google::Auth::Extras.wrap_authorization(
+  Google::Apis::RequestOptions.default.authorization = Google::Auth::Extras.static_authorization('my-access-token')
+)
 ```
+
+### Authorization vs Credential
+
+The values returned from the `*_authorization` methods will work with both the old and new SDKs, it'll just trigger a warning with the newer SDKs. The reverse however is not true, the values returned from the `*_credential` methods will not work with the old SDKs.
 
 ## Development
 
