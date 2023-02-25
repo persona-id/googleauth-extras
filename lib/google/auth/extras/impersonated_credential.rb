@@ -66,6 +66,16 @@ module Google
           }
         end
 
+        def inspect
+          "#<#{self.class.name}" \
+            " @access_token=#{@access_token ? '[REDACTED]' : 'nil'}" \
+            " @expires_at=#{expires_at.inspect}" \
+            " @impersonate_delegates=#{@impersonate_delegates.inspect}" \
+            " @impersonate_lifetime=#{@impersonate_lifetime.inspect}" \
+            " @impersonate_name=#{@impersonate_name.inspect}" \
+            '>'
+        end
+
         private
 
         def transform_email_to_name(email)

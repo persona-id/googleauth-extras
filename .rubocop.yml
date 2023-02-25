@@ -7,6 +7,12 @@ AllCops:
 Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
 
+Layout/LineContinuationLeadingSpace:
+  EnforcedStyle: leading
+
+Layout/LineEndStringConcatenationIndentation:
+  EnforcedStyle: indented
+
 Layout/LineLength:
   Max: 160
 

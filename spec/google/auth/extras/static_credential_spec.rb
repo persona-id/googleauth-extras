@@ -24,6 +24,27 @@ RSpec.describe Google::Auth::Extras::StaticCredential do
     end
   end
 
+  describe '#inspect' do
+    subject { described_class.new(access_token: access_token).inspect }
+
+    it 'does not leak sensitive values' do
+      TokenInfoStubs.stub_lookup_success(access_token: access_token, expires_in: 290)
+
+      # This is to allow showing the localized time in the real inspect but have
+      # something static we can compare against here.
+      allow(Time).to receive(:at).and_return(Time.at(1676584400).utc)
+
+      expect(subject).to eq(
+        '#<Google::Auth::Extras::StaticCredential' \
+          ' @access_token=[REDACTED]' \
+          ' @expires_at=2023-02-16 21:53:20 UTC' \
+          '>',
+      )
+
+      expect(Time).to have_received(:at).with(1676584400)
+    end
+  end
+
   context 'token refresh' do
     it 'does not support refreshing' do
       info_stub = TokenInfoStubs.stub_lookup_success(access_token: access_token, expires_in: 290)
