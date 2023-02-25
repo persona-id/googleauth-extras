@@ -1,5 +1,8 @@
 # googleauth-extras
 
+[![Gem Version](https://img.shields.io/gem/v/googleauth-extras?color=blue)](https://rubygems.org/gems/googleauth-extras)
+![Build](https://github.com/persona-id/googleauth-extras/workflows/CI/badge.svg)
+
 **Disclaimer: This gem is not sponsored by Google.**
 
 The [googleauth](https://github.com/googleapis/google-auth-library-ruby) currently lacks support for all the authentication schemes supported in Python and the `gcloud` CLI. This gem aims to support additional schemes like:
