@@ -5,6 +5,8 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in googleauth-extras.gemspec
 gemspec
 
+gem 'google-cloud-storage', '~> 1.44'
+
 gem 'pry-byebug', '~> 3.10'
 gem 'rake', '~> 12.0'
 gem 'rspec', '~> 3.0'
