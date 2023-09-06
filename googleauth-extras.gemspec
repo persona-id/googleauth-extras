@@ -34,5 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'faraday', '>= 1.0', '< 3.0'
   spec.add_runtime_dependency 'google-apis-iamcredentials_v1'
   spec.add_runtime_dependency 'googleauth', '~> 1.3'
-  spec.add_runtime_dependency 'signet', '~> 0.17.0'
+  spec.add_runtime_dependency 'signet', '>= 0.17.0', '< 0.19.0'
 end
