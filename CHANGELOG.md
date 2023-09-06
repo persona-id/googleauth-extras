@@ -1,5 +1,10 @@
 # Release History
 
+0.2.1
+-----
+
+- Support signet 0.18.0 ([#7](https://github.com/persona-id/googleauth-extras/pull/7))
+
 0.2.0
 -----
 
