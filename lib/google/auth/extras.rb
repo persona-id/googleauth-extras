@@ -4,6 +4,7 @@ require 'date'
 require 'google/apis/iamcredentials_v1'
 require 'signet/oauth_2/client'
 
+require 'google/auth/extras/identity_credential_refresh_patch'
 require 'google/auth/extras/impersonated_credential'
 require 'google/auth/extras/static_credential'
 require 'google/auth/extras/token_info'
@@ -22,6 +23,11 @@ module Google
       # A credential that impersonates a service account. For usage with the
       # older style GCP Ruby SDKs from the google-apis-* gems.
       #
+      # The `email_address` of the service account to impersonate may be the exact
+      # same as the one represented in `base_credentials` for any desired situation
+      # but a handy usage is for going from and access token to an ID token (aka
+      # using `target_audience`).
+      #
       # @param base_credentials [Hash, String, Signet::OAuth2::Client]
       #   Credentials to use to impersonate the provided email address.
       #
@@ -32,28 +38,46 @@ module Google
       # @param email_address [String]
       #   Email of the service account to impersonate.
       #
+      # @param include_email [Boolean]
+      #   Include the service account email in the token. If set to true, the token will
+      #   contain email and email_verified claims.
+      #   Only supported when using a target_audience.
+      #
       # @param lifetime [String]
       #   The desired lifetime (in seconds) of the token before needing to be refreshed.
       #   Defaults to 1h, adjust as needed given a refresh is automatically performed
       #   when the token less than 60s of remaining life and refresh requires an
       #   additional API call.
+      #   Only supported when not using a target_audience.
       #
       # @param scope [String, Array<String>]
-      #   The OAuth 2 scope(s) to request. Can either be formatted as a comma seperated string or array.
+      #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
+      #   Only supported when not using a target_audience.
       #
       # @return [Google::Auth::Extras::ImpersonatedCredential]
       #
       # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateAccessToken
+      # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateIdToken
       # @see https://cloud.google.com/iam/docs/create-short-lived-credentials-delegated#sa-credentials-permissions
       # @see https://developers.google.com/identity/protocols/oauth2/scopes
       #
-      def impersonated_authorization(email_address:, scope:, base_credentials: nil, delegate_email_addresses: nil, lifetime: nil)
+      def impersonated_authorization(
+        email_address:,
+        base_credentials: nil,
+        delegate_email_addresses: nil,
+        include_email: nil,
+        lifetime: nil,
+        scope: nil,
+        target_audience: nil
+      )
         ImpersonatedCredential.new(
           base_credentials: base_credentials,
           delegate_email_addresses: delegate_email_addresses,
           email_address: email_address,
+          include_email: include_email,
           lifetime: lifetime,
           scope: scope,
+          target_audience: target_audience,
         )
       end
 
@@ -70,29 +94,47 @@ module Google
       # @param email_address [String]
       #   Email of the service account to impersonate.
       #
+      # @param include_email [Boolean]
+      #   Include the service account email in the token. If set to true, the token will
+      #   contain email and email_verified claims.
+      #   Only supported when using a target_audience.
+      #
       # @param lifetime [String]
       #   The desired lifetime (in seconds) of the token before needing to be refreshed.
       #   Defaults to 1h, adjust as needed given a refresh is automatically performed
       #   when the token less than 60s of remaining life and refresh requires an
       #   additional API call.
+      #   Only supported when not using a target_audience.
       #
       # @param scope [String, Array<String>]
-      #   The OAuth 2 scope(s) to request. Can either be formatted as a comma seperated string or array.
+      #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
+      #   Only supported when not using a target_audience.
       #
       # @return [Google::Auth::Credential<Google::Auth::Extras::ImpersonatedCredential>]
       #
       # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateAccessToken
+      # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateIdToken
       # @see https://cloud.google.com/iam/docs/create-short-lived-credentials-delegated#sa-credentials-permissions
       # @see https://developers.google.com/identity/protocols/oauth2/scopes
       #
-      def impersonated_credential(email_address:, scope:, base_credentials: nil, delegate_email_addresses: nil, lifetime: nil)
+      def impersonated_credential(
+        email_address:,
+        base_credentials: nil,
+        delegate_email_addresses: nil,
+        include_email: nil,
+        lifetime: nil,
+        scope: nil,
+        target_audience: nil
+      )
         wrap_authorization(
           impersonated_authorization(
             base_credentials: base_credentials,
             delegate_email_addresses: delegate_email_addresses,
             email_address: email_address,
+            include_email: include_email,
             lifetime: lifetime,
             scope: scope,
+            target_audience: target_audience,
           ),
         )
       end
@@ -122,7 +164,7 @@ module Google
       end
 
       # Take an authorization and turn it into a credential, primarily used
-      # for setting up both the old and new style SDK.s
+      # for setting up both the old and new style SDKs.
       #
       # @param client [Signet::OAuth2::Client]
       #   Authorization credential to wrap.

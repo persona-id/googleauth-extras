@@ -22,4 +22,23 @@ module IAMStubs
         status: 200,
       )
   end
+
+  def stub_generate_id_token(audience:, name:, response_token:, delegates: nil, include_email: nil)
+    WebMock
+      .stub_request(:post, "https://iamcredentials.googleapis.com/v1/#{name}:generateIdToken")
+      .with(body: {
+        audience: audience,
+        delegates: delegates,
+        includeEmail: include_email,
+      }.compact.to_json)
+      .to_return(
+        body: {
+          token: response_token,
+        }.to_json,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        status: 200,
+      )
+  end
 end

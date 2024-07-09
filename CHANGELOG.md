@@ -1,9 +1,14 @@
 # Release History
 
+Unreleased
+----------
+
+- Support impersonation with ID tokens. ([#9](https://github.com/persona-id/googleauth-extras/pull/9))
+
 0.2.1
 -----
 
-- Support signet 0.18.0 ([#7](https://github.com/persona-id/googleauth-extras/pull/7))
+- Support signet 0.18.0. ([#7](https://github.com/persona-id/googleauth-extras/pull/7))
 
 0.2.0
 -----
