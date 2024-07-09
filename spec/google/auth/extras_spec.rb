@@ -5,7 +5,7 @@ RSpec.describe Google::Auth::Extras do
     Timecop.freeze(Time.at(1676584110))
   end
 
-  shared_context 'impersonated authorization' do
+  shared_context 'impersonated authorization (access token)' do
     let(:access_token) { SecureRandom.hex(100) }
     let(:base_credentials) { Signet::OAuth2::Client.new }
     let(:email_address) { 'my-sa@my-project.iam.gserviceaccount.com' }
@@ -38,6 +38,46 @@ RSpec.describe Google::Auth::Extras do
     end
   end
 
+  shared_context 'impersonated authorization (id token)' do
+    let(:audience) { 'https://random.run.app' }
+    let(:base_credentials) { Signet::OAuth2::Client.new }
+    let(:email_address) { 'my-sa@my-project.iam.gserviceaccount.com' }
+
+    let(:delegate_email_addresses) do
+      %w[
+        intermediate-sa-one@my-project.iam.gserviceaccount.com
+        intermediate-sa-two@my-project.iam.gserviceaccount.com
+      ]
+    end
+
+    let(:id_token) do
+      JWT.encode(
+        {
+          aud: audience,
+        },
+        OpenSSL::PKey::RSA.generate(2048),
+        'none',
+      )
+    end
+
+    let!(:generate_stub) do
+      IAMStubs.stub_generate_id_token(
+        audience: audience,
+        delegates: %w[
+          projects/-/serviceAccounts/intermediate-sa-one@my-project.iam.gserviceaccount.com
+          projects/-/serviceAccounts/intermediate-sa-two@my-project.iam.gserviceaccount.com
+        ],
+        include_email: true,
+        name: "projects/-/serviceAccounts/#{email_address}",
+        response_token: id_token,
+      )
+    end
+
+    before do
+      allow(base_credentials).to receive(:access_token).and_return('abc123')
+    end
+  end
+
   shared_context 'static authorization' do
     let(:access_token) { SecureRandom.hex(100) }
 
@@ -47,61 +87,132 @@ RSpec.describe Google::Auth::Extras do
   end
 
   describe '.impersonated_authorization' do
-    subject do
-      described_class.impersonated_authorization(
-        base_credentials: base_credentials,
-        delegate_email_addresses: delegate_email_addresses,
-        email_address: email_address,
-        lifetime: lifetime,
-        scope: scopes,
-      )
+    context 'for an access token' do
+      subject do
+        described_class.impersonated_authorization(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          lifetime: lifetime,
+          scope: scopes,
+        )
+      end
+
+      include_context 'impersonated authorization (access token)'
+
+      it 'creates the authorization' do
+        expect(subject).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+        expect(subject.access_token).to be_nil
+        expect(subject.id_token).to be_nil
+        expect(subject.token_type).to eq(:access_token)
+
+        expect(generate_stub).not_to have_been_requested
+      end
+
+      it 'triggers a warning from the GCP SDK' do
+        allow(Kernel).to receive(:warn)
+
+        Google::Cloud.configure.storage.credentials = subject
+
+        expect(Kernel).to have_received(:warn).with(/Invalid value #<Google::Auth::Extras::ImpersonatedCredential .* for key :credentials\. Setting anyway\./)
+      end
     end
 
-    include_context 'impersonated authorization'
+    context 'for an id token' do
+      subject do
+        described_class.impersonated_authorization(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          include_email: true,
+          target_audience: audience,
+        )
+      end
 
-    it 'creates the authorization' do
-      expect(subject).to be_a(Google::Auth::Extras::ImpersonatedCredential)
-      expect(subject.access_token).to be_nil
+      include_context 'impersonated authorization (id token)'
 
-      expect(generate_stub).not_to have_been_requested
-    end
+      it 'creates the authorization' do
+        expect(subject).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+        expect(subject.access_token).to be_nil
+        expect(subject.id_token).to be_nil
+        expect(subject.token_type).to eq(:id_token)
 
-    it 'triggers a warning from the GCP SDK' do
-      allow(Kernel).to receive(:warn)
+        expect(generate_stub).not_to have_been_requested
+      end
 
-      Google::Cloud.configure.storage.credentials = subject
+      it 'triggers a warning from the GCP SDK' do
+        allow(Kernel).to receive(:warn)
 
-      expect(Kernel).to have_received(:warn).with(/Invalid value #<Google::Auth::Extras::ImpersonatedCredential .* for key :credentials\. Setting anyway\./)
+        Google::Cloud.configure.storage.credentials = subject
+
+        expect(Kernel).to have_received(:warn).with(/Invalid value #<Google::Auth::Extras::ImpersonatedCredential .* for key :credentials\. Setting anyway\./)
+      end
     end
   end
 
   describe '.impersonated_credential' do
-    subject do
-      described_class.impersonated_credential(
-        base_credentials: base_credentials,
-        delegate_email_addresses: delegate_email_addresses,
-        email_address: email_address,
-        lifetime: lifetime,
-        scope: scopes,
-      )
+    context 'for an access token' do
+      subject do
+        described_class.impersonated_credential(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          lifetime: lifetime,
+          scope: scopes,
+        )
+      end
+
+      include_context 'impersonated authorization (access token)'
+
+      it 'creates the credential' do
+        expect(subject).to be_a(Google::Auth::Credentials)
+        expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+        expect(subject.client.access_token).to eq(access_token)
+        expect(subject.client.id_token).to be_nil
+        expect(subject.client.token_type).to eq(:access_token)
+
+        expect(generate_stub).to have_been_requested
+      end
+
+      it 'does not trigger a warning from the GCP SDK' do
+        allow(Kernel).to receive(:warn)
+
+        Google::Cloud.configure.storage.credentials = subject
+
+        expect(Kernel).not_to have_received(:warn)
+      end
     end
 
-    include_context 'impersonated authorization'
+    context 'for an id token' do
+      subject do
+        described_class.impersonated_credential(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          include_email: true,
+          target_audience: audience,
+        )
+      end
 
-    it 'creates the credential' do
-      expect(subject).to be_a(Google::Auth::Credentials)
-      expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
-      expect(subject.client.access_token).to eq(access_token)
+      include_context 'impersonated authorization (id token)'
 
-      expect(generate_stub).to have_been_requested
-    end
+      it 'creates the credential' do
+        expect(subject).to be_a(Google::Auth::Credentials)
+        expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+        expect(subject.client.access_token).to be_nil
+        expect(subject.client.id_token).to eq(id_token)
+        expect(subject.client.token_type).to eq(:id_token)
 
-    it 'does not trigger a warning from the GCP SDK' do
-      allow(Kernel).to receive(:warn)
+        expect(generate_stub).to have_been_requested
+      end
 
-      Google::Cloud.configure.storage.credentials = subject
+      it 'does not trigger a warning from the GCP SDK' do
+        allow(Kernel).to receive(:warn)
 
-      expect(Kernel).not_to have_received(:warn)
+        Google::Cloud.configure.storage.credentials = subject
+
+        expect(Kernel).not_to have_received(:warn)
+      end
     end
   end
 

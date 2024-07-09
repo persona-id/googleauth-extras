@@ -15,7 +15,11 @@ RSpec.configure do |config|
   config.example_status_persistence_file_path = '.rspec_status'
 
   config.expect_with :rspec do |c|
-    c.syntax = :expect
     c.max_formatted_output_length = 1024
+    c.syntax = :expect
+  end
+
+  config.mock_with :rspec do |mocks|
+    mocks.verify_partial_doubles = true
   end
 end
