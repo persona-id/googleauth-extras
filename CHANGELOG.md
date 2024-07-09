@@ -1,7 +1,7 @@
 # Release History
 
-Unreleased
-----------
+0.3.0
+-----
 
 - Support impersonation with ID tokens. ([#9](https://github.com/persona-id/googleauth-extras/pull/9))
 
