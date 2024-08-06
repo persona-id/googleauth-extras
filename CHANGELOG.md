@@ -1,6 +1,6 @@
 # Release History
 
-Unreleased
+0.4.0
 ----------
 
 - Support setting a quota project. ([#11](https://github.com/persona-id/googleauth-extras/pull/11))
