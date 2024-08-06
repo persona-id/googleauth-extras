@@ -20,7 +20,28 @@ RSpec.describe Google::Auth::Extras::StaticCredential do
       expect(subject.expires_within?(60)).to be(false)
       expect(subject.expires_within?(300)).to be(true)
 
+      expect(subject.quota_project_id).to be_nil
+
       expect(info_stub).to have_been_requested
+    end
+
+    context 'when given a quota project' do
+      subject { described_class.new(access_token: access_token, quota_project_id: 'other-project') }
+
+      it 'correctly sets up the credential' do
+        info_stub = TokenInfoStubs.stub_lookup_success(access_token: access_token, expires_in: 290)
+
+        expect(subject.access_token).to eq(access_token)
+        expect(subject.expires_at).to eq(Time.at(1676584400))
+        expect(subject.issued_at).to be_nil
+
+        expect(subject.expires_within?(60)).to be(false)
+        expect(subject.expires_within?(300)).to be(true)
+
+        expect(subject.quota_project_id).to eq('other-project')
+
+        expect(info_stub).to have_been_requested
+      end
     end
   end
 
@@ -38,6 +59,7 @@ RSpec.describe Google::Auth::Extras::StaticCredential do
         '#<Google::Auth::Extras::StaticCredential' \
           ' @access_token=[REDACTED]' \
           ' @expires_at=2023-02-16 21:53:20 UTC' \
+          ' @quota_project_id=nil' \
           '>',
       )
 

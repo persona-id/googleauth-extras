@@ -7,6 +7,8 @@ module Google
       class ImpersonatedCredential < Signet::OAuth2::Client
         include IdentityCredentialRefreshPatch
 
+        attr_reader :quota_project_id
+
         # A credential that impersonates a service account.
         #
         # The `email_address` of the service account to impersonate may be the exact
@@ -36,6 +38,10 @@ module Google
         #   additional API call.
         #   Only supported when not using a target_audience.
         #
+        # @param quota_project_id [String]
+        #   The project ID used for quota and billing. This project may be different from
+        #   the project used to create the credentials.
+        #
         # @param scope [String, Array<String>]
         #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
         #   Only supported when not using a target_audience.
@@ -54,6 +60,7 @@ module Google
           delegate_email_addresses: nil,
           include_email: nil,
           lifetime: nil,
+          quota_project_id: nil,
           scope: nil,
           target_audience: nil
         )
@@ -90,6 +97,8 @@ module Google
           end
 
           @impersonate_name = transform_email_to_name(email_address)
+
+          @quota_project_id = quota_project_id
         end
 
         def fetch_access_token(*)
@@ -135,6 +144,7 @@ module Google
               " @impersonate_delegates=#{@impersonate_delegates.inspect}" \
               " @impersonate_include_email=#{@impersonate_include_email.inspect}" \
               " @impersonate_name=#{@impersonate_name.inspect}" \
+              " @quota_project_id=#{@quota_project_id.inspect}" \
               " @target_audience=#{@target_audience.inspect}" \
               '>'
           else
@@ -144,6 +154,7 @@ module Google
               " @impersonate_delegates=#{@impersonate_delegates.inspect}" \
               " @impersonate_lifetime=#{@impersonate_lifetime.inspect}" \
               " @impersonate_name=#{@impersonate_name.inspect}" \
+              " @quota_project_id=#{@quota_project_id.inspect}" \
               '>'
           end
         end

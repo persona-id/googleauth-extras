@@ -116,6 +116,29 @@ RSpec.describe Google::Auth::Extras do
 
         expect(Kernel).to have_received(:warn).with(/Invalid value #<Google::Auth::Extras::ImpersonatedCredential .* for key :credentials\. Setting anyway\./)
       end
+
+      context 'with a quota project' do
+        subject do
+          described_class.impersonated_authorization(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            lifetime: lifetime,
+            quota_project_id: 'other-project',
+            scope: scopes,
+          )
+        end
+
+        it 'creates the authorization' do
+          expect(subject).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+          expect(subject.access_token).to be_nil
+          expect(subject.id_token).to be_nil
+          expect(subject.quota_project_id).to eq('other-project')
+          expect(subject.token_type).to eq(:access_token)
+
+          expect(generate_stub).not_to have_been_requested
+        end
+      end
     end
 
     context 'for an id token' do
@@ -146,6 +169,29 @@ RSpec.describe Google::Auth::Extras do
         Google::Cloud.configure.storage.credentials = subject
 
         expect(Kernel).to have_received(:warn).with(/Invalid value #<Google::Auth::Extras::ImpersonatedCredential .* for key :credentials\. Setting anyway\./)
+      end
+
+      context 'with a quota project' do
+        subject do
+          described_class.impersonated_authorization(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            include_email: true,
+            quota_project_id: 'other-project',
+            target_audience: audience,
+          )
+        end
+
+        it 'creates the authorization' do
+          expect(subject).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+          expect(subject.access_token).to be_nil
+          expect(subject.id_token).to be_nil
+          expect(subject.quota_project_id).to eq('other-project')
+          expect(subject.token_type).to eq(:id_token)
+
+          expect(generate_stub).not_to have_been_requested
+        end
       end
     end
   end
@@ -181,6 +227,30 @@ RSpec.describe Google::Auth::Extras do
 
         expect(Kernel).not_to have_received(:warn)
       end
+
+      context 'with a quota project' do
+        subject do
+          described_class.impersonated_credential(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            lifetime: lifetime,
+            quota_project_id: 'other-project',
+            scope: scopes,
+          )
+        end
+
+        it 'creates the credential' do
+          expect(subject).to be_a(Google::Auth::Credentials)
+          expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+          expect(subject.client.access_token).to eq(access_token)
+          expect(subject.client.id_token).to be_nil
+          expect(subject.client.quota_project_id).to eq('other-project')
+          expect(subject.client.token_type).to eq(:access_token)
+
+          expect(generate_stub).to have_been_requested
+        end
+      end
     end
 
     context 'for an id token' do
@@ -213,6 +283,30 @@ RSpec.describe Google::Auth::Extras do
 
         expect(Kernel).not_to have_received(:warn)
       end
+
+      context 'with a quota project' do
+        subject do
+          described_class.impersonated_credential(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            include_email: true,
+            quota_project_id: 'other-project',
+            target_audience: audience,
+          )
+        end
+
+        it 'creates the credential' do
+          expect(subject).to be_a(Google::Auth::Credentials)
+          expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+          expect(subject.client.access_token).to be_nil
+          expect(subject.client.id_token).to eq(id_token)
+          expect(subject.client.quota_project_id).to eq('other-project')
+          expect(subject.client.token_type).to eq(:id_token)
+
+          expect(generate_stub).to have_been_requested
+        end
+      end
     end
   end
 
@@ -235,6 +329,18 @@ RSpec.describe Google::Auth::Extras do
 
       expect(Kernel).to have_received(:warn).with(/Invalid value #<Google::Auth::Extras::StaticCredential .* for key :credentials\. Setting anyway\./)
     end
+
+    context 'with a quota project' do
+      subject { described_class.static_authorization(access_token, quota_project_id: 'other-project') }
+
+      it 'creates the authorization' do
+        expect(subject).to be_a(Google::Auth::Extras::StaticCredential)
+        expect(subject.access_token).to eq(access_token)
+        expect(subject.quota_project_id).to eq('other-project')
+
+        expect(info_stub).to have_been_requested
+      end
+    end
   end
 
   describe '.static_credential' do
@@ -256,6 +362,19 @@ RSpec.describe Google::Auth::Extras do
       Google::Cloud.configure.storage.credentials = subject
 
       expect(Kernel).not_to have_received(:warn)
+    end
+
+    context 'with a quota project' do
+      subject { described_class.static_credential(access_token, quota_project_id: 'other-project') }
+
+      it 'creates the credential' do
+        expect(subject).to be_a(Google::Auth::Credentials)
+        expect(subject.client).to be_a(Google::Auth::Extras::StaticCredential)
+        expect(subject.client.access_token).to eq(access_token)
+        expect(subject.client.quota_project_id).to eq('other-project')
+
+        expect(info_stub).to have_been_requested
+      end
     end
   end
 end
