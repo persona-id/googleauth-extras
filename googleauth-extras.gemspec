@@ -30,9 +30,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_runtime_dependency 'addressable', '~> 2.8'
-  spec.add_runtime_dependency 'faraday', '>= 1.0', '< 3.0'
-  spec.add_runtime_dependency 'google-apis-iamcredentials_v1'
-  spec.add_runtime_dependency 'googleauth', '~> 1.3'
-  spec.add_runtime_dependency 'signet', '>= 0.17.0', '< 0.19.0'
+  spec.add_dependency 'addressable', '~> 2.8'
+  spec.add_dependency 'faraday', '>= 1.0', '< 3.0'
+  spec.add_dependency 'google-apis-iamcredentials_v1'
+  spec.add_dependency 'googleauth', '~> 1.3'
+  spec.add_dependency 'signet', '>= 0.17.0', '< 0.19.0'
 end

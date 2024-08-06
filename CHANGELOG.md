@@ -1,5 +1,10 @@
 # Release History
 
+Unreleased
+----------
+
+- Update gemspec for new RuboCop settings. ([#12](https://github.com/persona-id/googleauth-extras/pull/12))
+
 0.3.0
 -----
 
