@@ -19,6 +19,17 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
       expect(credential.scope).to eq(%w[a b c])
     end
 
+    it 'correctly sets up the credential with a quota project' do
+      credential = described_class.new(
+        email_address: email_address,
+        quota_project_id: 'other-project',
+        scope: scopes,
+      )
+
+      expect(credential.quota_project_id).to eq('other-project')
+      expect(credential.scope).to eq(%w[a b c])
+    end
+
     it 'normalizes the scope' do
       credential = described_class.new(
         email_address: email_address,
@@ -112,6 +123,7 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
             ' @impersonate_delegates=[]' \
             ' @impersonate_lifetime=nil' \
             ' @impersonate_name="projects/-/serviceAccounts/my-sa@my-project.iam.gserviceaccount.com"' \
+            ' @quota_project_id=nil' \
             '>',
         )
 
@@ -131,6 +143,7 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
             ' @impersonate_delegates=[]' \
             ' @impersonate_lifetime=nil' \
             ' @impersonate_name="projects/-/serviceAccounts/my-sa@my-project.iam.gserviceaccount.com"' \
+            ' @quota_project_id=nil' \
             '>',
         )
       end

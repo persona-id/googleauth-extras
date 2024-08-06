@@ -3,6 +3,8 @@
 Unreleased
 ----------
 
+- Support setting a quota project. ([#11](https://github.com/persona-id/googleauth-extras/pull/11))
+
 - Update gemspec for new RuboCop settings. ([#12](https://github.com/persona-id/googleauth-extras/pull/12))
 
 0.3.0

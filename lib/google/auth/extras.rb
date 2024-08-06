@@ -50,6 +50,10 @@ module Google
       #   additional API call.
       #   Only supported when not using a target_audience.
       #
+      # @param quota_project_id [String]
+      #   The project ID used for quota and billing. This project may be different from
+      #   the project used to create the credentials.
+      #
       # @param scope [String, Array<String>]
       #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
       #   Only supported when not using a target_audience.
@@ -67,6 +71,7 @@ module Google
         delegate_email_addresses: nil,
         include_email: nil,
         lifetime: nil,
+        quota_project_id: nil,
         scope: nil,
         target_audience: nil
       )
@@ -76,6 +81,7 @@ module Google
           email_address: email_address,
           include_email: include_email,
           lifetime: lifetime,
+          quota_project_id: quota_project_id,
           scope: scope,
           target_audience: target_audience,
         )
@@ -106,6 +112,10 @@ module Google
       #   additional API call.
       #   Only supported when not using a target_audience.
       #
+      # @param quota_project_id [String]
+      #   The project ID used for quota and billing. This project may be different from
+      #   the project used to create the credentials.
+      #
       # @param scope [String, Array<String>]
       #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
       #   Only supported when not using a target_audience.
@@ -123,6 +133,7 @@ module Google
         delegate_email_addresses: nil,
         include_email: nil,
         lifetime: nil,
+        quota_project_id: nil,
         scope: nil,
         target_audience: nil
       )
@@ -133,6 +144,7 @@ module Google
             email_address: email_address,
             include_email: include_email,
             lifetime: lifetime,
+            quota_project_id: quota_project_id,
             scope: scope,
             target_audience: target_audience,
           ),
@@ -145,10 +157,15 @@ module Google
       # @param token [String]
       #   The access token to use.
       #
+      # @param quota_project_id [String]
+      #   The project ID used for quota and billing. This project may be different from
+      #   the project used to create the credentials.
+      #
+      #
       # @return [Google::Auth::Extras::StaticCredential]
       #
-      def static_authorization(token)
-        StaticCredential.new(access_token: token)
+      def static_authorization(token, quota_project_id: nil)
+        StaticCredential.new(access_token: token, quota_project_id: quota_project_id)
       end
 
       # A credential using a static access token. For usage with the newer
@@ -157,10 +174,14 @@ module Google
       # @param token [String]
       #   The access token to use.
       #
+      # @param quota_project_id [String]
+      #   The project ID used for quota and billing. This project may be different from
+      #   the project used to create the credentials.
+      #
       # @return [Google::Auth::Credential<Google::Auth::Extras::StaticCredential>]
       #
-      def static_credential(token)
-        wrap_authorization(static_authorization(token))
+      def static_credential(token, quota_project_id: nil)
+        wrap_authorization(static_authorization(token, quota_project_id: quota_project_id))
       end
 
       # Take an authorization and turn it into a credential, primarily used

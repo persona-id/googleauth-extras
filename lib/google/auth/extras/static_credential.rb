@@ -7,17 +7,25 @@ module Google
       class StaticCredential < Signet::OAuth2::Client
         class AuthorizationExpired < StandardError; end
 
+        attr_reader :quota_project_id
+
         # A credential using a static access token.
         #
         # @param access_token [String]
         #   The access token to use.
         #
-        def initialize(access_token:)
+        # @param quota_project_id [String]
+        #   The project ID used for quota and billing. This project may be different from
+        #   the project used to create the credentials.
+        #
+        def initialize(access_token:, quota_project_id: nil)
           super(
             access_token: access_token,
             expires_at: TokenInfo.lookup_access_token(access_token).fetch('exp'),
             issued_at: nil,
           )
+
+          @quota_project_id = quota_project_id
         end
 
         def fetch_access_token(*)
@@ -28,7 +36,11 @@ module Google
         end
 
         def inspect
-          "#<#{self.class.name} @access_token=[REDACTED] @expires_at=#{expires_at.inspect}>"
+          "#<#{self.class.name}" \
+            ' @access_token=[REDACTED]' \
+            " @expires_at=#{expires_at.inspect}" \
+            " @quota_project_id=#{@quota_project_id.inspect}" \
+            '>'
         end
       end
     end
