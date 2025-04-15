@@ -6,6 +6,7 @@ require 'signet/oauth_2/client'
 
 require 'google/auth/extras/identity_credential_refresh_patch'
 require 'google/auth/extras/impersonated_credential'
+require 'google/auth/extras/service_account_jwt_credential'
 require 'google/auth/extras/static_credential'
 require 'google/auth/extras/token_info'
 require 'google/auth/extras/version'
@@ -146,6 +147,116 @@ module Google
             lifetime: lifetime,
             quota_project_id: quota_project_id,
             scope: scope,
+            target_audience: target_audience,
+          ),
+        )
+      end
+
+      # A credential that obtains a signed JWT from Google for a service account.
+      # For usage with the older style GCP Ruby SDKs from the google-apis-* gems.
+      # Also useful for calling IAP-protected endpoints using the Google-managed
+      # OAuth client.
+      #
+      # @param base_credentials [Hash, String, Signet::OAuth2::Client]
+      #   Credentials to use to sign the JWTs.
+      #
+      # @param delegate_email_addresses [String, Array<String>]
+      #   The email addresses (if any) of intermediate service accounts to reach
+      #   the +email_address+ from +base_credentials+.
+      #
+      # @param email_address [String]
+      #   Email of the service account to sign the JWT.
+      #
+      # @param issuer [String]
+      #   The desired value of the iss field on the issued JWT. Defaults to the email_address.
+      #
+      # @param lifetime [Integers]
+      #   The desired lifetime (in seconds) of the JWT before needing to be refreshed.
+      #   Defaults to 3600 (1h), adjust as needed given a refresh is automatically
+      #   performed when the token less than 60s of remaining life and refresh requires
+      #   an additional API call.
+      #
+      # @param subject [String]
+      #   The desired value of the sub field on the issued JWT. Defaults to the email_address.
+      #
+      # @param target_audience [String]
+      #   The audience for the token, such as the API or account that this token grants access to.
+      #
+      # @return [Google::Auth::Extras::ServiceAccountJWTCredential]
+      #
+      # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/signJwt
+      # @see https://cloud.google.com/iam/docs/create-short-lived-credentials-delegated#sa-credentials-permissions
+      #
+      def service_account_jwt_authorization(
+        email_address:,
+        target_audience:,
+        base_credentials: nil,
+        delegate_email_addresses: nil,
+        issuer: nil,
+        lifetime: 3600,
+        subject: nil
+      )
+        ServiceAccountJWTCredential.new(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          issuer: issuer,
+          lifetime: lifetime,
+          subject: subject,
+          target_audience: target_audience,
+        )
+      end
+
+      # A credential that obtains a signed JWT from Google for a service account.
+      # For usage with the newer style GCP Ruby SDKs from the google-cloud-* gems.
+      #
+      # @param base_credentials [Hash, String, Signet::OAuth2::Client]
+      #   Credentials to use to sign the JWTs.
+      #
+      # @param delegate_email_addresses [String, Array<String>]
+      #   The email addresses (if any) of intermediate service accounts to reach
+      #   the +email_address+ from +base_credentials+.
+      #
+      # @param email_address [String]
+      #   Email of the service account to sign the JWT.
+      #
+      # @param issuer [String]
+      #   The desired value of the iss field on the issued JWT. Defaults to the email_address.
+      #
+      # @param lifetime [Integers]
+      #   The desired lifetime (in seconds) of the JWT before needing to be refreshed.
+      #   Defaults to 3600 (1h), adjust as needed given a refresh is automatically
+      #   performed when the token less than 60s of remaining life and refresh requires
+      #   an additional API call.
+      #
+      # @param subject [String]
+      #   The desired value of the sub field on the issued JWT. Defaults to the email_address.
+      #
+      # @param target_audience [String]
+      #   The audience for the token, such as the API or account that this token grants access to.
+      #
+      # @return [Google::Auth::Extras::ServiceAccountJWTCredential]
+      #
+      # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/signJwt
+      # @see https://cloud.google.com/iam/docs/create-short-lived-credentials-delegated#sa-credentials-permissions
+      #
+      def service_account_jwt_credential(
+        email_address:,
+        target_audience:,
+        base_credentials: nil,
+        delegate_email_addresses: nil,
+        issuer: nil,
+        lifetime: 3600,
+        subject: nil
+      )
+        wrap_authorization(
+          service_account_jwt_authorization(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            issuer: issuer,
+            lifetime: lifetime,
+            subject: subject,
             target_audience: target_audience,
           ),
         )

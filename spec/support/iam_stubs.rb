@@ -41,4 +41,22 @@ module IAMStubs
         status: 200,
       )
   end
+
+  def stub_sign_jwt(name:, payload:, response_signed_jwt:, delegates: nil)
+    WebMock
+      .stub_request(:post, "https://iamcredentials.googleapis.com/v1/#{name}:signJwt")
+      .with(body: {
+        delegates: delegates,
+        payload: payload,
+      }.compact.to_json)
+      .to_return(
+        body: {
+          signedJwt: response_signed_jwt,
+        }.to_json,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        status: 200,
+      )
+  end
 end
