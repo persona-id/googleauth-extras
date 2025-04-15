@@ -40,6 +40,23 @@ RSpec.describe Google::Auth::Extras do
     end
   end
 
+  shared_context 'service account jwt authorization' do
+    let(:audience) { 'https://random.run.app' }
+    let(:base_credentials) { Signet::OAuth2::Client.new }
+    let(:email_address) { 'my-sa@my-project.iam.gserviceaccount.com' }
+
+    let(:delegate_email_addresses) do
+      %w[
+        intermediate-sa-one@my-project.iam.gserviceaccount.com
+        intermediate-sa-two@my-project.iam.gserviceaccount.com
+      ]
+    end
+
+    before do
+      allow(base_credentials).to receive(:access_token).and_return('abc123')
+    end
+  end
+
   shared_context 'static authorization' do
     let(:access_token) { SecureRandom.hex(100) }
 
@@ -253,6 +270,64 @@ RSpec.describe Google::Auth::Extras do
           expect(subject.client.token_type).to eq(:id_token)
         end
       end
+    end
+  end
+
+  describe '.service_account_jwt_authorization' do
+    subject do
+      described_class.service_account_jwt_authorization(
+        base_credentials: base_credentials,
+        delegate_email_addresses: delegate_email_addresses,
+        email_address: email_address,
+        target_audience: audience,
+      )
+    end
+
+    include_context 'service account jwt authorization'
+
+    it 'creates the authorization' do
+      expect(subject).to be_a(Google::Auth::Extras::ServiceAccountJWTCredential)
+      expect(subject.access_token).to be_nil
+      expect(subject.id_token).to be_nil
+      expect(subject.token_type).to eq(:id_token)
+    end
+
+    it 'triggers a warning from the GCP SDK' do
+      allow(Kernel).to receive(:warn)
+
+      Google::Cloud.configure.storage.credentials = subject
+
+      expect(Kernel).to have_received(:warn)
+        .with(/Invalid value #<Google::Auth::Extras::ServiceAccountJWTCredential .* for key :credentials\. Setting anyway\./)
+    end
+  end
+
+  describe '.service_account_jwt_credential' do
+    subject do
+      described_class.service_account_jwt_credential(
+        base_credentials: base_credentials,
+        delegate_email_addresses: delegate_email_addresses,
+        email_address: email_address,
+        target_audience: audience,
+      )
+    end
+
+    include_context 'service account jwt authorization'
+
+    it 'creates the credential' do
+      expect(subject).to be_a(Google::Auth::Credentials)
+      expect(subject.client).to be_a(Google::Auth::Extras::ServiceAccountJWTCredential)
+      expect(subject.client.access_token).to be_nil
+      expect(subject.client.id_token).to be_nil
+      expect(subject.client.token_type).to eq(:id_token)
+    end
+
+    it 'does not trigger a warning from the GCP SDK' do
+      allow(Kernel).to receive(:warn)
+
+      Google::Cloud.configure.storage.credentials = subject
+
+      expect(Kernel).not_to have_received(:warn)
     end
   end
 
