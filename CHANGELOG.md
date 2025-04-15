@@ -1,5 +1,10 @@
 # Release History
 
+Unreleased
+----------
+
+- Drop support for Ruby 2.7 & 3.0, update test dependencies. ([#15](https://github.com/persona-id/googleauth-extras/pull/15))
+
 0.4.0
 ----------
 
