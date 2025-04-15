@@ -5,12 +5,12 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in googleauth-extras.gemspec
 gemspec
 
-gem 'google-cloud-storage', '~> 1.44'
+gem 'google-cloud-storage', '~> 1.55'
 
-gem 'pry-byebug', '~> 3.10'
-gem 'rake', '~> 12.0'
-gem 'rspec', '~> 3.0'
-gem 'rubocop', '~> 1.45'
-gem 'rubocop-rspec', '~> 2.18'
-gem 'timecop', '~> 0.9.6'
-gem 'webmock', '~> 3.18'
+gem 'pry-byebug', '~> 3.11'
+gem 'rake', '~> 13.2'
+gem 'rspec', '~> 3.13'
+gem 'rubocop', '~> 1.75'
+gem 'rubocop-rspec', '~> 3.5'
+gem 'timecop', '~> 0.9.10'
+gem 'webmock', '~> 3.25'

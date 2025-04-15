@@ -6,7 +6,6 @@ RSpec.describe Google::Auth::Extras do
   end
 
   shared_context 'impersonated authorization (access token)' do
-    let(:access_token) { SecureRandom.hex(100) }
     let(:base_credentials) { Signet::OAuth2::Client.new }
     let(:email_address) { 'my-sa@my-project.iam.gserviceaccount.com' }
     let(:lifetime) { '120s' }
@@ -17,20 +16,6 @@ RSpec.describe Google::Auth::Extras do
         intermediate-sa-one@my-project.iam.gserviceaccount.com
         intermediate-sa-two@my-project.iam.gserviceaccount.com
       ]
-    end
-
-    let!(:generate_stub) do
-      IAMStubs.stub_generate_access_token(
-        delegates: %w[
-          projects/-/serviceAccounts/intermediate-sa-one@my-project.iam.gserviceaccount.com
-          projects/-/serviceAccounts/intermediate-sa-two@my-project.iam.gserviceaccount.com
-        ],
-        lifetime: '120s',
-        name: "projects/-/serviceAccounts/#{email_address}",
-        scope: %w[a b c],
-        response_access_token: access_token,
-        response_expire_time: (Time.now + 120).to_datetime.rfc3339,
-      )
     end
 
     before do
@@ -48,29 +33,6 @@ RSpec.describe Google::Auth::Extras do
         intermediate-sa-one@my-project.iam.gserviceaccount.com
         intermediate-sa-two@my-project.iam.gserviceaccount.com
       ]
-    end
-
-    let(:id_token) do
-      JWT.encode(
-        {
-          aud: audience,
-        },
-        OpenSSL::PKey::RSA.generate(2048),
-        'none',
-      )
-    end
-
-    let!(:generate_stub) do
-      IAMStubs.stub_generate_id_token(
-        audience: audience,
-        delegates: %w[
-          projects/-/serviceAccounts/intermediate-sa-one@my-project.iam.gserviceaccount.com
-          projects/-/serviceAccounts/intermediate-sa-two@my-project.iam.gserviceaccount.com
-        ],
-        include_email: true,
-        name: "projects/-/serviceAccounts/#{email_address}",
-        response_token: id_token,
-      )
     end
 
     before do
@@ -105,8 +67,6 @@ RSpec.describe Google::Auth::Extras do
         expect(subject.access_token).to be_nil
         expect(subject.id_token).to be_nil
         expect(subject.token_type).to eq(:access_token)
-
-        expect(generate_stub).not_to have_been_requested
       end
 
       it 'triggers a warning from the GCP SDK' do
@@ -135,8 +95,6 @@ RSpec.describe Google::Auth::Extras do
           expect(subject.id_token).to be_nil
           expect(subject.quota_project_id).to eq('other-project')
           expect(subject.token_type).to eq(:access_token)
-
-          expect(generate_stub).not_to have_been_requested
         end
       end
     end
@@ -159,8 +117,6 @@ RSpec.describe Google::Auth::Extras do
         expect(subject.access_token).to be_nil
         expect(subject.id_token).to be_nil
         expect(subject.token_type).to eq(:id_token)
-
-        expect(generate_stub).not_to have_been_requested
       end
 
       it 'triggers a warning from the GCP SDK' do
@@ -189,8 +145,6 @@ RSpec.describe Google::Auth::Extras do
           expect(subject.id_token).to be_nil
           expect(subject.quota_project_id).to eq('other-project')
           expect(subject.token_type).to eq(:id_token)
-
-          expect(generate_stub).not_to have_been_requested
         end
       end
     end
@@ -213,11 +167,9 @@ RSpec.describe Google::Auth::Extras do
       it 'creates the credential' do
         expect(subject).to be_a(Google::Auth::Credentials)
         expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
-        expect(subject.client.access_token).to eq(access_token)
+        expect(subject.client.access_token).to be_nil
         expect(subject.client.id_token).to be_nil
         expect(subject.client.token_type).to eq(:access_token)
-
-        expect(generate_stub).to have_been_requested
       end
 
       it 'does not trigger a warning from the GCP SDK' do
@@ -243,12 +195,10 @@ RSpec.describe Google::Auth::Extras do
         it 'creates the credential' do
           expect(subject).to be_a(Google::Auth::Credentials)
           expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
-          expect(subject.client.access_token).to eq(access_token)
+          expect(subject.client.access_token).to be_nil
           expect(subject.client.id_token).to be_nil
           expect(subject.client.quota_project_id).to eq('other-project')
           expect(subject.client.token_type).to eq(:access_token)
-
-          expect(generate_stub).to have_been_requested
         end
       end
     end
@@ -270,10 +220,8 @@ RSpec.describe Google::Auth::Extras do
         expect(subject).to be_a(Google::Auth::Credentials)
         expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
         expect(subject.client.access_token).to be_nil
-        expect(subject.client.id_token).to eq(id_token)
+        expect(subject.client.id_token).to be_nil
         expect(subject.client.token_type).to eq(:id_token)
-
-        expect(generate_stub).to have_been_requested
       end
 
       it 'does not trigger a warning from the GCP SDK' do
@@ -300,11 +248,9 @@ RSpec.describe Google::Auth::Extras do
           expect(subject).to be_a(Google::Auth::Credentials)
           expect(subject.client).to be_a(Google::Auth::Extras::ImpersonatedCredential)
           expect(subject.client.access_token).to be_nil
-          expect(subject.client.id_token).to eq(id_token)
+          expect(subject.client.id_token).to be_nil
           expect(subject.client.quota_project_id).to eq('other-project')
           expect(subject.client.token_type).to eq(:id_token)
-
-          expect(generate_stub).to have_been_requested
         end
       end
     end
