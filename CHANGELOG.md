@@ -1,6 +1,6 @@
 # Release History
 
-Unreleased
+0.5.0
 ----------
 
 - Support signed JWT credentials. ([#14](https://github.com/persona-id/googleauth-extras/pull/14))
