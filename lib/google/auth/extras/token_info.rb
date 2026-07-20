@@ -35,11 +35,11 @@ module Google
           query_string = URI.encode_www_form(query)
           uri = TOKEN_INFO_URI.merge("?#{query_string}")
 
-          response = Faraday.default_connection.get(uri.to_s)
+          response = Net::HTTP.get_response(uri)
 
-          raise LookupFailed, response.body.to_s unless response.status == 200
+          raise LookupFailed, response.body unless response.is_a?(Net::HTTPSuccess)
 
-          credentials = Signet::OAuth2.parse_credentials(response.body, response.headers['Content-Type'])
+          credentials = Signet::OAuth2.parse_credentials(response.body, response['Content-Type'])
 
           raise LookupMalformed, 'Missing token expiry' unless credentials['exp']
 
