@@ -39,6 +39,25 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
       expect(credential.scope).to eq(%w[a b c])
     end
 
+    it 'defaults the universe domain to googleapis.com' do
+      credential = described_class.new(
+        email_address: email_address,
+        scope: scopes,
+      )
+
+      expect(credential.universe_domain).to eq('googleapis.com')
+    end
+
+    it 'allows overriding the universe domain' do
+      credential = described_class.new(
+        email_address: email_address,
+        scope: scopes,
+        universe_domain: 'example.com',
+      )
+
+      expect(credential.universe_domain).to eq('example.com')
+    end
+
     it 'requires scope or target_audience' do
       expect do
         described_class.new(

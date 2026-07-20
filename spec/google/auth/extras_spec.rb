@@ -84,6 +84,7 @@ RSpec.describe Google::Auth::Extras do
         expect(subject.access_token).to be_nil
         expect(subject.id_token).to be_nil
         expect(subject.token_type).to eq(:access_token)
+        expect(subject.universe_domain).to eq('googleapis.com')
       end
 
       it 'triggers a warning from the GCP SDK' do
@@ -112,6 +113,24 @@ RSpec.describe Google::Auth::Extras do
           expect(subject.id_token).to be_nil
           expect(subject.quota_project_id).to eq('other-project')
           expect(subject.token_type).to eq(:access_token)
+        end
+      end
+
+      context 'with a universe domain' do
+        subject do
+          described_class.impersonated_authorization(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            lifetime: lifetime,
+            scope: scopes,
+            universe_domain: 'example.com',
+          )
+        end
+
+        it 'creates the authorization' do
+          expect(subject).to be_a(Google::Auth::Extras::ImpersonatedCredential)
+          expect(subject.universe_domain).to eq('example.com')
         end
       end
     end
@@ -187,6 +206,8 @@ RSpec.describe Google::Auth::Extras do
         expect(subject.client.access_token).to be_nil
         expect(subject.client.id_token).to be_nil
         expect(subject.client.token_type).to eq(:access_token)
+        expect(subject.universe_domain).to eq('googleapis.com')
+        expect(subject.client.universe_domain).to eq('googleapis.com')
       end
 
       it 'does not trigger a warning from the GCP SDK' do
@@ -216,6 +237,25 @@ RSpec.describe Google::Auth::Extras do
           expect(subject.client.id_token).to be_nil
           expect(subject.client.quota_project_id).to eq('other-project')
           expect(subject.client.token_type).to eq(:access_token)
+        end
+      end
+
+      context 'with a universe domain' do
+        subject do
+          described_class.impersonated_credential(
+            base_credentials: base_credentials,
+            delegate_email_addresses: delegate_email_addresses,
+            email_address: email_address,
+            lifetime: lifetime,
+            scope: scopes,
+            universe_domain: 'example.com',
+          )
+        end
+
+        it 'creates the credential' do
+          expect(subject).to be_a(Google::Auth::Credentials)
+          expect(subject.universe_domain).to eq('example.com')
+          expect(subject.client.universe_domain).to eq('example.com')
         end
       end
     end
@@ -290,6 +330,7 @@ RSpec.describe Google::Auth::Extras do
       expect(subject.access_token).to be_nil
       expect(subject.id_token).to be_nil
       expect(subject.token_type).to eq(:id_token)
+      expect(subject.universe_domain).to eq('googleapis.com')
     end
 
     it 'triggers a warning from the GCP SDK' do
@@ -299,6 +340,23 @@ RSpec.describe Google::Auth::Extras do
 
       expect(Kernel).to have_received(:warn)
         .with(/Invalid value #<Google::Auth::Extras::ServiceAccountJWTCredential .* for key :credentials\. Setting anyway\./)
+    end
+
+    context 'with a universe domain' do
+      subject do
+        described_class.service_account_jwt_authorization(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          target_audience: audience,
+          universe_domain: 'example.com',
+        )
+      end
+
+      it 'creates the authorization' do
+        expect(subject).to be_a(Google::Auth::Extras::ServiceAccountJWTCredential)
+        expect(subject.universe_domain).to eq('example.com')
+      end
     end
   end
 
@@ -320,6 +378,8 @@ RSpec.describe Google::Auth::Extras do
       expect(subject.client.access_token).to be_nil
       expect(subject.client.id_token).to be_nil
       expect(subject.client.token_type).to eq(:id_token)
+      expect(subject.universe_domain).to eq('googleapis.com')
+      expect(subject.client.universe_domain).to eq('googleapis.com')
     end
 
     it 'does not trigger a warning from the GCP SDK' do
@@ -328,6 +388,24 @@ RSpec.describe Google::Auth::Extras do
       Google::Cloud.configure.storage.credentials = subject
 
       expect(Kernel).not_to have_received(:warn)
+    end
+
+    context 'with a universe domain' do
+      subject do
+        described_class.service_account_jwt_credential(
+          base_credentials: base_credentials,
+          delegate_email_addresses: delegate_email_addresses,
+          email_address: email_address,
+          target_audience: audience,
+          universe_domain: 'example.com',
+        )
+      end
+
+      it 'creates the credential' do
+        expect(subject).to be_a(Google::Auth::Credentials)
+        expect(subject.universe_domain).to eq('example.com')
+        expect(subject.client.universe_domain).to eq('example.com')
+      end
     end
   end
 
@@ -339,6 +417,7 @@ RSpec.describe Google::Auth::Extras do
     it 'creates the authorization' do
       expect(subject).to be_a(Google::Auth::Extras::StaticCredential)
       expect(subject.access_token).to eq(access_token)
+      expect(subject.universe_domain).to eq('googleapis.com')
 
       expect(info_stub).to have_been_requested
     end
@@ -362,6 +441,17 @@ RSpec.describe Google::Auth::Extras do
         expect(info_stub).to have_been_requested
       end
     end
+
+    context 'with a universe domain' do
+      subject { described_class.static_authorization(access_token, universe_domain: 'example.com') }
+
+      it 'creates the authorization' do
+        expect(subject).to be_a(Google::Auth::Extras::StaticCredential)
+        expect(subject.universe_domain).to eq('example.com')
+
+        expect(info_stub).to have_been_requested
+      end
+    end
   end
 
   describe '.static_credential' do
@@ -373,6 +463,8 @@ RSpec.describe Google::Auth::Extras do
       expect(subject).to be_a(Google::Auth::Credentials)
       expect(subject.client).to be_a(Google::Auth::Extras::StaticCredential)
       expect(subject.client.access_token).to eq(access_token)
+      expect(subject.universe_domain).to eq('googleapis.com')
+      expect(subject.client.universe_domain).to eq('googleapis.com')
 
       expect(info_stub).to have_been_requested
     end
@@ -396,6 +488,38 @@ RSpec.describe Google::Auth::Extras do
 
         expect(info_stub).to have_been_requested
       end
+    end
+
+    context 'with a universe domain' do
+      subject { described_class.static_credential(access_token, universe_domain: 'example.com') }
+
+      it 'creates the credential' do
+        expect(subject).to be_a(Google::Auth::Credentials)
+        expect(subject.universe_domain).to eq('example.com')
+        expect(subject.client.universe_domain).to eq('example.com')
+
+        expect(info_stub).to have_been_requested
+      end
+    end
+  end
+
+  describe '.wrap_authorization' do
+    let(:client) { Signet::OAuth2::Client.new }
+
+    it 'wraps the client in a Google::Auth::Credentials' do
+      credential = described_class.wrap_authorization(client)
+
+      expect(credential).to be_a(Google::Auth::Credentials)
+      expect(credential.client).to be(client)
+    end
+
+    it 'delegates to the universe domain already set on the client' do
+      client.universe_domain = 'example.com'
+
+      credential = described_class.wrap_authorization(client)
+
+      expect(credential.universe_domain).to eq('example.com')
+      expect(credential.client.universe_domain).to eq('example.com')
     end
   end
 end

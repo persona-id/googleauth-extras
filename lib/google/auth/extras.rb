@@ -58,6 +58,10 @@ module Google
       #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
       #   Only supported when not using a target_audience.
       #
+      # @param universe_domain [String]
+      #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+      #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+      #
       # @return [Google::Auth::Extras::ImpersonatedCredential]
       #
       # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateAccessToken
@@ -73,7 +77,8 @@ module Google
         lifetime: nil,
         quota_project_id: nil,
         scope: nil,
-        target_audience: nil
+        target_audience: nil,
+        universe_domain: 'googleapis.com'
       )
         ImpersonatedCredential.new(
           base_credentials: base_credentials,
@@ -84,6 +89,7 @@ module Google
           quota_project_id: quota_project_id,
           scope: scope,
           target_audience: target_audience,
+          universe_domain: universe_domain,
         )
       end
 
@@ -120,6 +126,10 @@ module Google
       #   The OAuth 2 scopes to request. Can either be formatted as a comma seperated string or array.
       #   Only supported when not using a target_audience.
       #
+      # @param universe_domain [String]
+      #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+      #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+      #
       # @return [Google::Auth::Credential<Google::Auth::Extras::ImpersonatedCredential>]
       #
       # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateAccessToken
@@ -135,7 +145,8 @@ module Google
         lifetime: nil,
         quota_project_id: nil,
         scope: nil,
-        target_audience: nil
+        target_audience: nil,
+        universe_domain: 'googleapis.com'
       )
         wrap_authorization(
           impersonated_authorization(
@@ -147,6 +158,7 @@ module Google
             quota_project_id: quota_project_id,
             scope: scope,
             target_audience: target_audience,
+            universe_domain: universe_domain,
           ),
         )
       end
@@ -181,6 +193,10 @@ module Google
       # @param target_audience [String]
       #   The audience for the token, such as the API or account that this token grants access to.
       #
+      # @param universe_domain [String]
+      #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+      #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+      #
       # @return [Google::Auth::Extras::ServiceAccountJWTCredential]
       #
       # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/signJwt
@@ -193,7 +209,8 @@ module Google
         delegate_email_addresses: nil,
         issuer: nil,
         lifetime: 3600,
-        subject: nil
+        subject: nil,
+        universe_domain: 'googleapis.com'
       )
         ServiceAccountJWTCredential.new(
           base_credentials: base_credentials,
@@ -203,6 +220,7 @@ module Google
           lifetime: lifetime,
           subject: subject,
           target_audience: target_audience,
+          universe_domain: universe_domain,
         )
       end
 
@@ -234,6 +252,10 @@ module Google
       # @param target_audience [String]
       #   The audience for the token, such as the API or account that this token grants access to.
       #
+      # @param universe_domain [String]
+      #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+      #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+      #
       # @return [Google::Auth::Extras::ServiceAccountJWTCredential]
       #
       # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/signJwt
@@ -246,7 +268,8 @@ module Google
         delegate_email_addresses: nil,
         issuer: nil,
         lifetime: 3600,
-        subject: nil
+        subject: nil,
+        universe_domain: 'googleapis.com'
       )
         wrap_authorization(
           service_account_jwt_authorization(
@@ -257,6 +280,7 @@ module Google
             lifetime: lifetime,
             subject: subject,
             target_audience: target_audience,
+            universe_domain: universe_domain,
           ),
         )
       end
@@ -271,11 +295,14 @@ module Google
       #   The project ID used for quota and billing. This project may be different from
       #   the project used to create the credentials.
       #
+      # @param universe_domain [String]
+      #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+      #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
       #
       # @return [Google::Auth::Extras::StaticCredential]
       #
-      def static_authorization(token, quota_project_id: nil)
-        StaticCredential.new(access_token: token, quota_project_id: quota_project_id)
+      def static_authorization(token, quota_project_id: nil, universe_domain: 'googleapis.com')
+        StaticCredential.new(access_token: token, quota_project_id: quota_project_id, universe_domain: universe_domain)
       end
 
       # A credential using a static access token. For usage with the newer
@@ -288,17 +315,25 @@ module Google
       #   The project ID used for quota and billing. This project may be different from
       #   the project used to create the credentials.
       #
+      # @param universe_domain [String]
+      #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+      #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+      #
       # @return [Google::Auth::Credential<Google::Auth::Extras::StaticCredential>]
       #
-      def static_credential(token, quota_project_id: nil)
-        wrap_authorization(static_authorization(token, quota_project_id: quota_project_id))
+      def static_credential(token, quota_project_id: nil, universe_domain: 'googleapis.com')
+        wrap_authorization(
+          static_authorization(token, quota_project_id: quota_project_id, universe_domain: universe_domain),
+        )
       end
 
       # Take an authorization and turn it into a credential, primarily used
       # for setting up both the old and new style SDKs.
       #
       # @param client [Signet::OAuth2::Client]
-      #   Authorization credential to wrap.
+      #   Authorization credential to wrap. The universe domain reported to gRPC google-cloud
+      #   clients (so they don't raise Gapic::UniverseDomainMismatch) is taken from the client
+      #   as-is; set it on the client before wrapping if needed.
       #
       # @return [Google::Auth::Credential]
       #

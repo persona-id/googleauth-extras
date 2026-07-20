@@ -25,6 +25,22 @@ RSpec.describe Google::Auth::Extras::StaticCredential do
       expect(info_stub).to have_been_requested
     end
 
+    it 'defaults the universe domain to googleapis.com' do
+      TokenInfoStubs.stub_lookup_success(access_token: access_token, expires_in: 290)
+
+      expect(subject.universe_domain).to eq('googleapis.com')
+    end
+
+    context 'when given a universe domain' do
+      subject { described_class.new(access_token: access_token, universe_domain: 'example.com') }
+
+      it 'sets the universe domain' do
+        TokenInfoStubs.stub_lookup_success(access_token: access_token, expires_in: 290)
+
+        expect(subject.universe_domain).to eq('example.com')
+      end
+    end
+
     context 'when given a quota project' do
       subject { described_class.new(access_token: access_token, quota_project_id: 'other-project') }
 

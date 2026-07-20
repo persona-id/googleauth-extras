@@ -18,6 +18,25 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
 
       expect(credential.target_audience).to eq(audience)
     end
+
+    it 'defaults the universe domain to googleapis.com' do
+      credential = described_class.new(
+        email_address: email_address,
+        target_audience: audience,
+      )
+
+      expect(credential.universe_domain).to eq('googleapis.com')
+    end
+
+    it 'allows overriding the universe domain' do
+      credential = described_class.new(
+        email_address: email_address,
+        target_audience: audience,
+        universe_domain: 'example.com',
+      )
+
+      expect(credential.universe_domain).to eq('example.com')
+    end
   end
 
   describe '#inspect' do
