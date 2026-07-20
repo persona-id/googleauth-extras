@@ -33,6 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'addressable', '~> 2.8'
   spec.add_dependency 'faraday', '>= 1.0', '< 3.0'
   spec.add_dependency 'google-apis-iamcredentials_v1'
-  spec.add_dependency 'signet', '>= 0.17.0', '< 0.19.0'
-  spec.add_dependency 'googleauth', '>= 1.11.1'
+  spec.add_dependency 'googleauth', '~> 1.11', '>= 1.11.1'
+  spec.add_dependency 'signet', '>= 0.17.0', '< 1'
 end
