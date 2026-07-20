@@ -93,7 +93,16 @@ RSpec.describe Google::Auth::Extras::StaticCredential do
       expect(credential.needs_access_token?).to be(true)
       expect { credential.apply({}) }.to raise_error do |error|
         expect(error).to be_a(Signet::AuthorizationError)
-        expect(error.cause).to be_a(Google::Auth::Extras::RefreshNotSupported)
+
+        # googleauth wraps the raised error (see Signet::OAuth2::Client#retry_with_error),
+        # so RefreshNotSupported is somewhere in the cause chain rather than the immediate cause.
+        causes = []
+        cause = error.cause
+        while cause
+          causes << cause
+          cause = cause.cause
+        end
+        expect(causes).to include(an_instance_of(Google::Auth::Extras::RefreshNotSupported))
       end
 
       # This is to check we're not getting caught in retry logic.
