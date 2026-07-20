@@ -5,8 +5,6 @@ module Google
     module Extras
       # This credential impersonates a service account.
       class ImpersonatedCredential < Signet::OAuth2::Client
-        include IdentityCredentialRefreshPatch
-
         attr_reader :quota_project_id
 
         # A credential that impersonates a service account.

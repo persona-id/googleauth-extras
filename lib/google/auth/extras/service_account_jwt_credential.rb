@@ -5,8 +5,6 @@ module Google
     module Extras
       # This credential issues JWTs signed a service account.
       class ServiceAccountJWTCredential < Signet::OAuth2::Client
-        include IdentityCredentialRefreshPatch
-
         # A credential that obtains a signed JWT from Google for a service account.
         #
         # @param base_credentials [Hash, String, Signet::OAuth2::Client]

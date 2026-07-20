@@ -4,7 +4,6 @@ require 'date'
 require 'google/apis/iamcredentials_v1'
 require 'signet/oauth_2/client'
 
-require 'google/auth/extras/identity_credential_refresh_patch'
 require 'google/auth/extras/impersonated_credential'
 require 'google/auth/extras/service_account_jwt_credential'
 require 'google/auth/extras/static_credential'

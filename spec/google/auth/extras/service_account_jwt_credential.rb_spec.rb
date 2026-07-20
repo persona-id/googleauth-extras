@@ -58,7 +58,7 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
             sub: email_address,
           },
           key,
-          'none',
+          'RS256',
         ),
       )
 
@@ -100,7 +100,7 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
           sub: email_address,
         },
         key,
-        'none',
+        'RS256',
       )
 
       first_generate_stub = IAMStubs.stub_sign_jwt(
@@ -150,7 +150,7 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
           sub: email_address,
         },
         key,
-        'none',
+        'RS256',
       )
 
       second_generate_stub = IAMStubs.stub_sign_jwt(
@@ -200,7 +200,7 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
           sub: email_address,
         },
         key,
-        'none',
+        'RS256',
       )
 
       generate_stub = IAMStubs.stub_sign_jwt(
@@ -245,7 +245,7 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
           sub: email_address,
         },
         key,
-        'none',
+        'RS256',
       )
 
       generate_stub = IAMStubs.stub_sign_jwt(
@@ -291,7 +291,7 @@ RSpec.describe Google::Auth::Extras::ServiceAccountJWTCredential do
           sub: 'my-subject',
         },
         key,
-        'none',
+        'RS256',
       )
 
       generate_stub = IAMStubs.stub_sign_jwt(
