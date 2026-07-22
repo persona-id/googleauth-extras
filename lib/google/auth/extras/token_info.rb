@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'uri'
+
 module Google
   module Auth
     module Extras
@@ -11,7 +13,7 @@ module Google
         class LookupFailed < StandardError; end
         class LookupMalformed < LookupFailed; end
 
-        TOKEN_INFO_URI = 'https://oauth2.googleapis.com/tokeninfo'
+        TOKEN_INFO_URI = URI('https://oauth2.googleapis.com/tokeninfo')
         private_constant :TOKEN_INFO_URI
 
         # Lookup the details for a valid access token, including it's expiration.
@@ -30,14 +32,14 @@ module Google
         private
 
         def lookup(query)
-          url = Addressable::URI.parse(TOKEN_INFO_URI)
-          url.query_values = query
+          query_string = URI.encode_www_form(query)
+          uri = TOKEN_INFO_URI.merge("?#{query_string}")
 
-          response = Faraday.default_connection.get(url.normalize.to_s)
+          response = Net::HTTP.get_response(uri)
 
-          raise LookupFailed, response.body.to_s unless response.status == 200
+          raise LookupFailed, response.body unless response.is_a?(Net::HTTPSuccess)
 
-          credentials = Signet::OAuth2.parse_credentials(response.body, response.headers['Content-Type'])
+          credentials = Signet::OAuth2.parse_credentials(response.body, response['Content-Type'])
 
           raise LookupMalformed, 'Missing token expiry' unless credentials['exp']
 

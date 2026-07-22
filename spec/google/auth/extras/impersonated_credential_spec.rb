@@ -344,7 +344,7 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
             exp: (Time.now + 600).to_i,
           },
           key,
-          'none',
+          'RS256',
         )
 
         first_generate_stub = IAMStubs.stub_generate_id_token(
@@ -385,7 +385,7 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
             exp: (Time.now + 600).to_i,
           },
           key,
-          'none',
+          'RS256',
         )
 
         second_generate_stub = IAMStubs.stub_generate_id_token(
@@ -426,7 +426,7 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
             exp: (Time.now + 600).to_i,
           },
           key,
-          'none',
+          'RS256',
         )
 
         generate_stub = IAMStubs.stub_generate_id_token(
@@ -467,7 +467,7 @@ RSpec.describe Google::Auth::Extras::ImpersonatedCredential do
             exp: (Time.now + 600).to_i,
           },
           key,
-          'none',
+          'RS256',
         )
 
         generate_stub = IAMStubs.stub_generate_id_token(
