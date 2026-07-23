@@ -47,6 +47,10 @@ module Google
         # @param target_audience [String]
         #   The audience for the token, such as the API or account that this token grants access to.
         #
+        # @param universe_domain [String]
+        #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+        #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+        #
         # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateAccessToken
         # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/generateIdToken
         # @see https://cloud.google.com/iam/docs/create-short-lived-credentials-delegated#sa-credentials-permissions
@@ -60,9 +64,15 @@ module Google
           lifetime: nil,
           quota_project_id: nil,
           scope: nil,
-          target_audience: nil
+          target_audience: nil,
+          universe_domain: 'googleapis.com'
         )
-          super(client_id: target_audience, scope: scope, target_audience: target_audience)
+          super(
+            client_id: target_audience,
+            scope: scope,
+            target_audience: target_audience,
+            universe_domain: base_credentials&.universe_domain || universe_domain,
+          )
 
           if self.target_audience.nil? || self.target_audience.empty?
             raise(ArgumentError, 'Must provide scope or target_audience') if self.scope.nil? || self.scope.empty?

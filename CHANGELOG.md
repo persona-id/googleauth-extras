@@ -1,5 +1,14 @@
 # Release History
 
+0.6.0
+----------
+
+- Support setting the universe domain (defaults to googleapis.com) so gRPC google-cloud clients don't raise Gapic::UniverseDomainMismatch.
+- drop `addressable` as a transitive dependency, replace with stdlib `uri`.
+- drop `faraday` as a transitive dependency, replace with stdlib `net-http`.
+- Bump minimum supported `googleauth` version which allows removing the identity credentials refresh patch (which has been fixed upstream).
+- Clamp supported `signet` to `< 1` instead (no API regressions expected).
+
 0.5.0
 ----------
 

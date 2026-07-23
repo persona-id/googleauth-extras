@@ -18,11 +18,16 @@ module Google
         #   The project ID used for quota and billing. This project may be different from
         #   the project used to create the credentials.
         #
-        def initialize(access_token:, quota_project_id: nil)
+        # @param universe_domain [String]
+        #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+        #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+        #
+        def initialize(access_token:, quota_project_id: nil, universe_domain: 'googleapis.com')
           super(
             access_token: access_token,
             expires_at: TokenInfo.lookup_access_token(access_token).fetch('exp'),
             issued_at: nil,
+            universe_domain: universe_domain,
           )
 
           @quota_project_id = quota_project_id

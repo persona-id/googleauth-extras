@@ -32,6 +32,10 @@ module Google
         # @param target_audience [String]
         #   The audience for the token, such as the API or account that this token grants access to.
         #
+        # @param universe_domain [String]
+        #   The universe domain of the credential, reported to gRPC google-cloud clients so they
+        #   don't raise Gapic::UniverseDomainMismatch. Defaults to googleapis.com.
+        #
         # @see https://cloud.google.com/iam/docs/reference/credentials/rest/v1/projects.serviceAccounts/signJwt
         # @see https://cloud.google.com/iam/docs/create-short-lived-credentials-delegated#sa-credentials-permissions
         #
@@ -42,9 +46,14 @@ module Google
           delegate_email_addresses: nil,
           issuer: nil,
           lifetime: 3600,
-          subject: nil
+          subject: nil,
+          universe_domain: 'googleapis.com'
         )
-          super(client_id: target_audience, target_audience: target_audience)
+          super(
+            client_id: target_audience,
+            target_audience: target_audience,
+            universe_domain: base_credentials&.universe_domain || universe_domain,
+          )
 
           @iam_credentials_service = Google::Apis::IamcredentialsV1::IAMCredentialsService.new.tap do |ics|
             ics.authorization = base_credentials if base_credentials
